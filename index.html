@@ -515,13 +515,13 @@
         body: JSON.stringify({ content: message })
       });
 
-      if (!res.ok) throw new Error('worker error');
+      if (!res.ok) throw new Error('Le serveur a répondu avec le statut ' + res.status);
 
       panelCalendar.classList.remove('active');
       panelSuccess.classList.add('active');
       document.getElementById('recap').textContent = `le ${dateLabel} à ${selectedTime}`;
     } catch (err) {
-      statusMsg.textContent = "Une erreur est survenue, réessaie.";
+      statusMsg.textContent = "Erreur : " + err.message + " | URL appelée : " + WORKER_URL;
       confirmBtn.disabled = false;
     }
   });
