@@ -4,7 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Un resto, ça te dit ?</title>
+
+  <!-- Balises pour cacher la surprise lors du partage du lien -->
+  <title>J'ai une question pour toi...</title>
+  <meta property="og:title" content="J'ai une petite question...">
+  <meta property="og:description" content="Ouvre le lien pour voir de quoi il s'agit 👀">
+  <meta name="theme-color" content="#fff5f6">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -471,21 +477,33 @@
       update();
     }
 
-    // ---------- Bouton OUI / Envoi Webhook ----------
+    // ---------- Bouton OUI / Envoi Webhook en Embed ----------
     const panelQuestion = document.getElementById('panelQuestion');
     const panelSuccess = document.getElementById('panelSuccess');
 
     btnOui.addEventListener('click', async () => {
-      // Désactiver le bouton pendant le chargement
       btnOui.disabled = true;
       const originalText = btnOui.textContent;
       btnOui.textContent = "Un instant...";
 
-      let message = `🍽️ Elle a dit **oui** pour le resto ! Prépare-toi à en discuter avec elle en privé.`;
+      // Construction de l'Embed Discord
+      let embedData = {
+        title: "🍽️ Elle a dit OUI pour le resto !",
+        description: "Prépare-toi à en discuter avec elle en privé pour fixer la date et le lieu.",
+        color: 16731501 // Code couleur décimal qui correspond au rose corail du site (#ff4d6d)
+      };
 
+      // Ajout du footer si elle a essayé de cliquer sur "Non"
       if (compteurNon > 0) {
-        message += `\n\n*(PS : Elle a quand même essayé de cliquer sur "Non" **${compteurNon}** fois avant d'accepter... 🤭)*`;
+        embedData.footer = {
+          text: `PS : Elle a quand même essayé de cliquer sur "Non" ${compteurNon} fois avant d'accepter... 🤭`
+        };
       }
+
+      // Le payload final attendu par Discord
+      const payload = {
+        embeds: [embedData]
+      };
 
       if (!WORKER_URL || WORKER_URL.includes('COLLE_ICI')) {
         alert("Erreur de configuration du Worker.");
@@ -498,12 +516,11 @@
         const res = await fetch(WORKER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: message })
+          body: JSON.stringify(payload) // On envoie l'objet avec l'Embed
         });
 
         if (!res.ok) throw new Error('Erreur de serveur');
 
-        // Succès : on cache les émojis, on affiche l'écran de fin et les confettis !
         document.getElementById('floating-emojis').style.opacity = '0';
         panelQuestion.classList.remove('active');
         panelSuccess.classList.add('active');
