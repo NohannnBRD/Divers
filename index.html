@@ -353,43 +353,55 @@
     createFloatingEmojis();
 
     // ---------- Bouton "Non" fuyant ----------
-    const zone = document.getElementById('choiceZone');
     const btnNon = document.getElementById('btnNon');
     const btnOui = document.getElementById('btnOui');
 
     let compteurNon = 0;
+    let lastFleeTime = 0; // Ajout d'un timer pour limiter la sensibilité
 
     function fleeButton() {
+      const now = Date.now();
+      // On ignore le mouvement si le bouton a fui il y a moins de 350ms (le temps de son animation)
+      if (now - lastFleeTime < 350) return;
+      lastFleeTime = now;
+
       compteurNon++;
 
-      const zoneRect = zone.getBoundingClientRect();
+      // On passe le bouton en position "fixed" pour qu'il puisse aller sur tout l'écran
+      btnNon.style.position = 'fixed';
+      btnNon.style.margin = '0';
+
       const btnRect = btnNon.getBoundingClientRect();
       const ouiRect = btnOui.getBoundingClientRect();
 
-      const maxLeft = zoneRect.width - btnRect.width;
-      const maxTop = zoneRect.height - btnRect.height;
+      // Calcul de l'espace sur l'écran entier
+      const maxLeft = window.innerWidth - btnRect.width;
+      const maxTop = window.innerHeight - btnRect.height;
 
-      const padding = 12;
-      const ouiLeft = (ouiRect.left - zoneRect.left) - padding;
-      const ouiTop = (ouiRect.top - zoneRect.top) - padding;
-      const ouiRight = (ouiRect.right - zoneRect.left) + padding;
-      const ouiBottom = (ouiRect.bottom - zoneRect.top) + padding;
+      // Définition de la zone interdite (le bouton Oui + une marge)
+      const padding = 15;
+      const ouiLeft = ouiRect.left - padding;
+      const ouiTop = ouiRect.top - padding;
+      const ouiRight = ouiRect.right + padding;
+      const ouiBottom = ouiRect.bottom + padding;
 
       let newLeft, newTop;
       let overlap = true;
       let attempts = 0;
 
+      // Recherche d'une place libre sur l'écran entier
       while (overlap && attempts < 100) {
-        newLeft = Math.max(6, Math.min(maxLeft - 6, Math.random() * maxLeft));
-        newTop = Math.max(0, Math.min(maxTop, Math.random() * maxTop));
+        newLeft = Math.max(10, Math.min(maxLeft - 10, Math.random() * maxLeft));
+        newTop = Math.max(10, Math.min(maxTop - 10, Math.random() * maxTop));
 
         const nonRight = newLeft + btnRect.width;
         const nonBottom = newTop + btnRect.height;
 
+        // Est-ce que le nouvel emplacement tombe sur le bouton Grave ?
         if (newLeft < ouiRight && nonRight > ouiLeft && newTop < ouiBottom && nonBottom > ouiTop) {
-          overlap = true;
+          overlap = true; // Oui, on recommence
         } else {
-          overlap = false;
+          overlap = false; // Non, c'est bon !
         }
         attempts++;
       }
@@ -399,14 +411,21 @@
       btnNon.style.transform = 'none';
     }
 
-    zone.addEventListener('mousemove', (e) => {
-      const btnRect = btnNon.getBoundingClientRect();
-      const cx = btnRect.left + btnRect.width / 2;
-      const cy = btnRect.top + btnRect.height / 2;
-      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
-      if (dist < 80) fleeButton();
+    // Écoute des mouvements de souris sur TOUT le document
+    document.addEventListener('mousemove', (e) => {
+      // Si l'écran de la question est actif
+      if (document.getElementById('panelQuestion').classList.contains('active')) {
+        const btnRect = btnNon.getBoundingClientRect();
+        const cx = btnRect.left + btnRect.width / 2;
+        const cy = btnRect.top + btnRect.height / 2;
+        const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+
+        // Si la souris s'approche à moins de 80px, on déclenche la fuite
+        if (dist < 80) fleeButton();
+      }
     });
 
+    // Sécurité pour les téléphones
     btnNon.addEventListener('touchstart', (e) => {
       e.preventDefault();
       fleeButton();
@@ -486,21 +505,18 @@
       const originalText = btnOui.textContent;
       btnOui.textContent = "Un instant...";
 
-      // 1. Construction de l'Embed Discord
       let embedData = {
         title: "🍽️ Elle a dit OUI pour le resto !",
         description: "Prépare-toi à en discuter avec elle en privé pour fixer la date et le lieu.",
-        color: 16731501 // Rose corail
+        color: 16731501
       };
 
-      // Ajout du footer si elle a essayé de cliquer sur "Non"
       if (compteurNon > 0) {
         embedData.footer = {
           text: `PS : Elle a quand même essayé de cliquer sur "Non" ${compteurNon} fois avant d'accepter... 🤭`
         };
       }
 
-      // 2. Le payload final attendu par Discord (on ajoute 'content' par sécurité)
       const payload = {
         content: "✨ Nouvelle réponse pour le resto !",
         embeds: [embedData]
@@ -520,20 +536,17 @@
           body: JSON.stringify(payload)
         });
 
-        // 3. Meilleure gestion des erreurs pour savoir ce qui coince
         if (!res.ok) {
           const errorText = await res.text();
           throw new Error(`Code ${res.status} : ${errorText}`);
         }
 
-        // Si tout est OK, on lance la victoire !
         document.getElementById('floating-emojis').style.opacity = '0';
         panelQuestion.classList.remove('active');
         panelSuccess.classList.add('active');
         startConfetti();
 
       } catch (err) {
-        // 4. L'alerte affichera le vrai message d'erreur technique
         alert("Oups, l'envoi a échoué.\n\nDétail de l'erreur : " + err.message + "\n\n(N'hésite pas à m'envoyer ce message si tu es bloqué !)");
         btnOui.disabled = false;
         btnOui.textContent = originalText;
