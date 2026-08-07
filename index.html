@@ -357,28 +357,32 @@
     const btnOui = document.getElementById('btnOui');
 
     let compteurNon = 0;
-    let lastFleeTime = 0; // Ajout d'un timer pour limiter la sensibilité
+    let lastFleeTime = 0; // Cooldown de sensibilité
 
     function fleeButton() {
       const now = Date.now();
-      // On ignore le mouvement si le bouton a fui il y a moins de 350ms (le temps de son animation)
+      // Le bouton ne peut fuir qu'une fois toutes les 350 millisecondes max
       if (now - lastFleeTime < 350) return;
       lastFleeTime = now;
 
       compteurNon++;
 
-      // On passe le bouton en position "fixed" pour qu'il puisse aller sur tout l'écran
-      btnNon.style.position = 'fixed';
-      btnNon.style.margin = '0';
+      // ASTUCE : On sort le bouton de la carte pour le rattacher au body (tout l'écran)
+      if (btnNon.parentNode !== document.body) {
+        document.body.appendChild(btnNon);
+        btnNon.style.position = 'fixed';
+        btnNon.style.zIndex = '9999'; // Toujours par-dessus le reste
+        btnNon.style.margin = '0';
+      }
 
       const btnRect = btnNon.getBoundingClientRect();
       const ouiRect = btnOui.getBoundingClientRect();
 
-      // Calcul de l'espace sur l'écran entier
+      // Limites de l'écran
       const maxLeft = window.innerWidth - btnRect.width;
       const maxTop = window.innerHeight - btnRect.height;
 
-      // Définition de la zone interdite (le bouton Oui + une marge)
+      // Définition de la zone d'esquive (autour du bouton Oui)
       const padding = 15;
       const ouiLeft = ouiRect.left - padding;
       const ouiTop = ouiRect.top - padding;
@@ -389,19 +393,19 @@
       let overlap = true;
       let attempts = 0;
 
-      // Recherche d'une place libre sur l'écran entier
+      // On cherche une place sur l'écran qui ne chevauche pas le bouton "Oui"
       while (overlap && attempts < 100) {
-        newLeft = Math.max(10, Math.min(maxLeft - 10, Math.random() * maxLeft));
-        newTop = Math.max(10, Math.min(maxTop - 10, Math.random() * maxTop));
+        // Math.max/min empêche le bouton de sortir complètement de l'écran
+        newLeft = Math.max(15, Math.min(maxLeft - 15, Math.random() * maxLeft));
+        newTop = Math.max(15, Math.min(maxTop - 15, Math.random() * maxTop));
 
         const nonRight = newLeft + btnRect.width;
         const nonBottom = newTop + btnRect.height;
 
-        // Est-ce que le nouvel emplacement tombe sur le bouton Grave ?
         if (newLeft < ouiRight && nonRight > ouiLeft && newTop < ouiBottom && nonBottom > ouiTop) {
-          overlap = true; // Oui, on recommence
+          overlap = true; // On a touché la zone "Oui", on recalcule
         } else {
-          overlap = false; // Non, c'est bon !
+          overlap = false; // La place est bonne !
         }
         attempts++;
       }
@@ -411,21 +415,18 @@
       btnNon.style.transform = 'none';
     }
 
-    // Écoute des mouvements de souris sur TOUT le document
+    // On écoute la souris sur l'intégralité de la page
     document.addEventListener('mousemove', (e) => {
-      // Si l'écran de la question est actif
       if (document.getElementById('panelQuestion').classList.contains('active')) {
         const btnRect = btnNon.getBoundingClientRect();
         const cx = btnRect.left + btnRect.width / 2;
         const cy = btnRect.top + btnRect.height / 2;
         const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
 
-        // Si la souris s'approche à moins de 80px, on déclenche la fuite
         if (dist < 80) fleeButton();
       }
     });
 
-    // Sécurité pour les téléphones
     btnNon.addEventListener('touchstart', (e) => {
       e.preventDefault();
       fleeButton();
@@ -505,6 +506,9 @@
       const originalText = btnOui.textContent;
       btnOui.textContent = "Un instant...";
 
+      // 1. Masquer le bouton "Non" s'il se baladait sur l'écran
+      btnNon.style.display = 'none';
+
       let embedData = {
         title: "🍽️ Elle a dit OUI pour le resto !",
         description: "Prépare-toi à en discuter avec elle en privé pour fixer la date et le lieu.",
@@ -550,6 +554,9 @@
         alert("Oups, l'envoi a échoué.\n\nDétail de l'erreur : " + err.message + "\n\n(N'hésite pas à m'envoyer ce message si tu es bloqué !)");
         btnOui.disabled = false;
         btnOui.textContent = originalText;
+
+        // On réaffiche le bouton Non en cas d'erreur
+        btnNon.style.display = 'block';
       }
     });
 
