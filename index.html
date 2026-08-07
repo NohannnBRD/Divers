@@ -3,28 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Un verre, ce soir ?</title>
+<title>Un resto, ça te dit ?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-deep: #241226;
-    --bg-panel: #34193a;
-    --gold: #d3a24c;
-    --gold-soft: #e8c98a;
-    --rose: #e6a9ac;
-    --cream: #f6ecdf;
-    --muted: #b39ea9;
-    --glow: rgba(211,162,76,0.35);
+    --bg-page: #fff5f6; 
+    --accent: #ff4d6d;  
+    --accent-hover: #e03755;
+    --text-main: #2b2d42; 
+    --text-muted: #8d99ae;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-border: rgba(255, 255, 255, 0.9);
+    --glow: rgba(255, 77, 109, 0.25);
   }
   *{box-sizing:border-box;}
-  html,body{
-    margin:0; padding:0; height:100%;
-    background: radial-gradient(ellipse at 30% 20%, #3a1f40 0%, var(--bg-deep) 55%, #170a1a 100%);
-    color: var(--cream);
+  
+  html, body{
+    margin:0; padding:0; min-height:100%;
+    background: var(--bg-page);
+    color: var(--text-main);
     font-family: 'Inter', sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
   body{
     position:relative;
@@ -32,61 +34,104 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    padding: 16px 8px; 
   }
-  /* ambient glass-light bokeh */
+  
+  /* Correction des calques d'arrière-plan */
   .bokeh{
-    position:absolute; border-radius:50%;
-    filter: blur(40px);
-    opacity:0.35;
+    position:fixed; border-radius:50%;
+    filter: blur(60px);
     pointer-events:none;
+    z-index: 1; /* Rendu positif pour ne pas passer sous le body */
   }
-  .bokeh.b1{ width:280px; height:280px; background:var(--gold); top:8%; left:10%; opacity:0.18;}
-  .bokeh.b2{ width:220px; height:220px; background:var(--rose); bottom:10%; right:8%; opacity:0.16;}
-  .bokeh.b3{ width:160px; height:160px; background:var(--gold-soft); bottom:25%; left:20%; opacity:0.1;}
+  .bokeh.b1{ width:300px; height:300px; background:#ffb3c1; top:0%; left:5%; opacity:0.6;}
+  .bokeh.b2{ width:250px; height:250px; background:#a2d2ff; bottom:5%; right:5%; opacity:0.5;}
+  .bokeh.b3{ width:200px; height:200px; background:#ffc8dd; bottom:20%; left:15%; opacity:0.5;}
+
+  #floating-emojis {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 2; /* Juste au-dessus du bokeh */
+    overflow: hidden;
+    transition: opacity 0.5s ease;
+  }
+  .floating-emoji {
+    position: absolute;
+    bottom: -60px;
+    opacity: 0.35; 
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    to {
+      transform: translateY(-120vh) rotate(360deg);
+    }
+  }
 
   .stage{
     position:relative;
-    width:min(92vw, 560px);
-    min-height:520px;
+    width:min(100%, 480px);
     display:flex;
     align-items:center;
     justify-content:center;
+    z-index: 10; /* La carte est forcée au tout premier plan */
   }
 
   .card{
     position:relative;
     width:100%;
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid var(--card-border);
+    border-radius: 28px;
+    box-shadow: 0 15px 35px rgba(43, 45, 66, 0.06);
     text-align:center;
-    padding: 20px;
+    padding: 24px 16px; 
   }
 
   .eyebrow{
     font-size:12px;
-    letter-spacing:0.28em;
+    font-weight: 600;
+    letter-spacing:0.12em;
     text-transform:uppercase;
-    color:var(--gold-soft);
-    opacity:0.8;
-    margin-bottom:18px;
+    color:var(--accent);
+    opacity:0.9;
+    margin-bottom:10px;
   }
 
   h1{
-    font-family:'Cormorant Garamond', serif;
-    font-weight:600;
-    font-size:clamp(28px, 5.4vw, 44px);
-    line-height:1.25;
-    margin:0 0 42px 0;
-    color:var(--cream);
-    text-shadow: 0 0 30px var(--glow);
+    font-family:'Outfit', sans-serif;
+    font-weight:700;
+    font-size:clamp(24px, 5vw, 34px);
+    line-height:1.2;
+    margin:0 0 28px 0;
+    color:var(--text-main);
   }
+  
   h1 em{
-    font-style:italic;
-    color:var(--gold-soft);
+    font-style:normal;
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+  }
+  h1 em::after{
+    content: '';
+    position: absolute;
+    bottom: 3px; left: -2%;
+    width: 104%; height: 10px;
+    background: #ffb3c1;
+    z-index: -1;
+    border-radius: 4px;
+    opacity: 0.6;
+    transform: rotate(-1deg);
   }
 
   .choice-zone{
     position:relative;
     width:100%;
-    height:150px;
+    height:130px;
   }
 
   .btn{
@@ -95,191 +140,176 @@
     transform:translateX(-50%);
     border:none;
     border-radius:999px;
-    padding:16px 40px;
-    font-family:'Inter', sans-serif;
+    padding:14px 36px;
+    font-family:'Outfit', sans-serif;
     font-weight:600;
-    font-size:16px;
+    font-size:17px;
     cursor:pointer;
-    transition: top 0.35s cubic-bezier(.2,.9,.3,1.3), left 0.35s cubic-bezier(.2,.9,.3,1.3), transform 0.35s cubic-bezier(.2,.9,.3,1.3), box-shadow 0.25s ease;
+    transition: top 0.35s cubic-bezier(.2,.9,.3,1.3), left 0.35s cubic-bezier(.2,.9,.3,1.3), transform 0.35s cubic-bezier(.2,.9,.3,1.3), box-shadow 0.25s ease, background 0.2s ease;
   }
 
   #btnOui{
-    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
-    color:#2a1710;
-    box-shadow: 0 8px 24px rgba(211,162,76,0.35);
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 8px 20px var(--glow);
     top:0;
     z-index: 10;
   }
   #btnOui:hover{
-    box-shadow: 0 10px 30px rgba(211,162,76,0.5);
+    background: var(--accent-hover);
+    box-shadow: 0 10px 25px rgba(255, 77, 109, 0.4);
     transform:translateX(-50%) translateY(-2px);
   }
 
   #btnNon{
-    background: transparent;
-    color: var(--muted);
-    border: 1.5px solid rgba(179,158,169,0.5);
-    top:66px;
+    background: white;
+    color: var(--text-muted);
+    border: 2px solid #edf2f4;
+    top:58px;
     z-index: 5;
   }
 
-  .hint{
-    margin-top:60px;
-    font-size:13px;
-    color:var(--muted);
-    min-height:18px;
-    letter-spacing:0.02em;
-    font-style:italic;
-    opacity:0.85;
-    transition: opacity 0.3s ease;
-  }
-
-  /* ---- Panels ---- */
   .panel{
     display:none;
     width:100%;
-    animation: rise 0.5s cubic-bezier(.2,.8,.2,1);
+    animation: rise 0.4s cubic-bezier(.2,.8,.2,1);
   }
   .panel.active{ display:block; }
   @keyframes rise{
-    from{ opacity:0; transform:translateY(14px); }
+    from{ opacity:0; transform:translateY(10px); }
     to{ opacity:1; transform:translateY(0); }
   }
 
   .panel h2{
-    font-family:'Cormorant Garamond', serif;
-    font-weight:600;
-    font-size:26px;
-    margin: 0 0 22px 0;
-    color:var(--gold-soft);
+    font-family:'Outfit', sans-serif;
+    font-weight:700;
+    font-size:20px;
+    margin: 0 0 16px 0;
+    color:var(--text-main);
   }
 
   .cal-header{
     display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:14px;
+    margin-bottom:10px;
   }
   .cal-header button{
-    background:none; border:none; color:var(--cream);
-    font-size:18px; cursor:pointer; padding:6px 12px;
+    background:none; border:none; color:var(--text-main);
+    font-size:20px; cursor:pointer; padding:2px 10px;
     border-radius:8px;
   }
-  .cal-header button:hover{ background: rgba(255,255,255,0.06); }
-  .cal-month{ font-weight:600; letter-spacing:0.03em; }
+  .cal-header button:hover{ background: rgba(0,0,0,0.04); }
+  .cal-month{ font-family:'Outfit', sans-serif; font-weight:600; font-size:16px; }
 
   .cal-grid{
     display:grid;
     grid-template-columns: repeat(7, 1fr);
-    gap:6px;
-    margin-bottom:10px;
+    gap:4px;
+    margin-bottom:8px;
   }
   .cal-dow{
-    font-size:11px; color:var(--muted); text-align:center; padding-bottom:4px;
-    text-transform:uppercase; letter-spacing:0.05em;
+    font-size:11px; font-weight:600; color:var(--text-muted); text-align:center; padding-bottom:2px;
+    text-transform:uppercase;
   }
   .cal-day{
     aspect-ratio:1;
     display:flex; align-items:center; justify-content:center;
     border-radius:10px;
-    font-size:14px;
+    font-size:13px; font-weight:500;
     cursor:pointer;
-    color:var(--cream);
-    background: rgba(255,255,255,0.03);
-    transition: background 0.2s ease, transform 0.15s ease;
+    color:var(--text-main);
+    background: rgba(255,255,255,0.6);
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
   }
   .cal-day.disabled{
-    color: rgba(179,158,169,0.3);
+    color: #d8e2dc;
     cursor:default;
     background:transparent;
   }
   .cal-day.empty{ visibility:hidden; }
   .cal-day:not(.disabled):not(.empty):hover{
-    background: rgba(211,162,76,0.2);
+    background: white;
+    border-color: #ffe5ec;
   }
   .cal-day.selected{
-    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
-    color:#2a1710;
+    background: var(--accent);
+    color:white;
     font-weight:600;
-    transform:scale(1.05);
+    border-color: var(--accent);
+    box-shadow: 0 3px 8px var(--glow);
   }
 
-  .time-row{
-    display:flex; gap:8px; flex-wrap:wrap;
+  .chip-container{
+    display:flex; gap:6px; flex-wrap:wrap;
     justify-content:center;
-    margin: 18px 0 24px 0;
+    margin: 14px 0 20px 0;
   }
-  .time-chip{
-    padding:8px 16px;
+  .chip{
+    padding:8px 14px;
     border-radius:999px;
-    border:1.5px solid rgba(179,158,169,0.4);
-    background:transparent;
-    color:var(--cream);
-    font-size:13px;
+    border:1.5px solid #edf2f4;
+    background:white;
+    color:var(--text-main);
+    font-size:13px; font-weight:500;
     cursor:pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
   }
-  .time-chip:hover{ border-color:var(--gold-soft); }
-  .time-chip.selected{
-    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
-    color:#2a1710;
-    border-color: transparent;
+  .chip:hover{ border-color:var(--accent-hover); color:var(--accent); }
+  .chip.selected{
+    background: var(--accent);
+    color:white;
+    border-color: var(--accent);
     font-weight:600;
+    box-shadow: 0 3px 8px var(--glow);
   }
 
   .confirm-btn{
     width:100%;
     border:none;
     border-radius:999px;
-    padding:15px;
-    font-family:'Inter', sans-serif;
+    padding:14px;
+    font-family:'Outfit', sans-serif;
     font-weight:600;
     font-size:15px;
-    color:#2a1710;
-    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color:white;
+    background: var(--accent);
     cursor:pointer;
-    box-shadow: 0 8px 24px rgba(211,162,76,0.35);
-    transition: opacity 0.2s ease, transform 0.15s ease;
+    box-shadow: 0 6px 18px var(--glow);
+    transition: all 0.2s ease;
   }
   .confirm-btn:disabled{
     opacity:0.4;
     cursor:not-allowed;
     box-shadow:none;
   }
-  .confirm-btn:not(:disabled):hover{ transform:translateY(-1px); }
-
-  .back-link{
-    display:block;
-    text-align:center;
-    margin-top:16px;
-    font-size:12px;
-    color:var(--muted);
-    cursor:pointer;
-    text-decoration:underline;
-    text-underline-offset:3px;
+  .confirm-btn:not(:disabled):hover{ 
+    background: var(--accent-hover);
   }
 
   .success{
     text-align:center;
+    padding: 10px 0;
   }
   .success .glass{
-    font-size:44px;
-    margin-bottom:18px;
+    font-size:48px;
+    margin-bottom:8px;
     display:block;
   }
   .success p{
-    color:var(--muted);
+    color:var(--text-muted);
     font-size:14px;
-    line-height:1.6;
+    line-height:1.5;
   }
   .success .recap{
-    color:var(--gold-soft);
+    color:var(--accent);
     font-weight:600;
   }
 
   .status-msg{
-    margin-top:14px;
-    font-size:12px;
-    color:var(--muted);
-    min-height:16px;
+    margin-top:10px;
+    font-size:11px;
+    color:var(--text-muted);
+    min-height:14px;
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -289,26 +319,42 @@
 </head>
 <body>
 
+<!-- Effet bokeh (taches de couleur) -->
 <div class="bokeh b1"></div>
 <div class="bokeh b2"></div>
 <div class="bokeh b3"></div>
+
+<!-- Conteneur pour les émojis flottants -->
+<div id="floating-emojis"></div>
 
 <div class="stage">
   <div class="card">
 
     <!-- Panel 1 : la question -->
     <div id="panelQuestion" class="panel active">
-      <div class="eyebrow">Une question, comme ça</div>
-      <h1>Est-ce que ça te dirait<br>que je t'invite <em>à boire un verre</em> ?</h1>
+      <div class="eyebrow">Une petite faim ? 😋</div>
+      <h1>Est-ce que ça te dirait<br>qu'on se fasse <em>un resto</em> ?</h1>
 
       <div class="choice-zone" id="choiceZone">
-        <button id="btnOui" class="btn">Oui</button>
+        <button id="btnOui" class="btn">Grave !</button>
         <button id="btnNon" class="btn">Non</button>
       </div>
-
     </div>
 
-    <!-- Panel 2 : calendrier -->
+    <!-- Panel 2 : Choix de la cuisine -->
+    <div id="panelFood" class="panel">
+      <h2>Qu'est-ce qui te ferait plaisir ?</h2>
+      <div class="chip-container" id="foodRow">
+        <button class="chip food-chip" data-food="Italien 🍕">🍕 Italien</button>
+        <button class="chip food-chip" data-food="Asiatique 🍣">🍣 Asiatique</button>
+        <button class="chip food-chip" data-food="Burger 🍔">🍔 Burger</button>
+        <button class="chip food-chip" data-food="Traditionnel 🍷">🍷 Traditionnel</button>
+        <button class="chip food-chip" data-food="Surprise 🙈">🙈 Surprise</button>
+      </div>
+      <button class="confirm-btn" id="nextToCalBtn" disabled>Suivant</button>
+    </div>
+
+    <!-- Panel 3 : calendrier -->
     <div id="panelCalendar" class="panel">
       <h2>Choisis un moment qui t'arrange</h2>
 
@@ -321,23 +367,30 @@
       <div class="cal-grid" id="calDow"></div>
       <div class="cal-grid" id="calGrid"></div>
 
-      <div class="time-row" id="timeRow">
-        <button class="time-chip" data-time="18:00">18h00</button>
-        <button class="time-chip" data-time="19:00">19h00</button>
-        <button class="time-chip" data-time="20:00">20h00</button>
-        <button class="time-chip" data-time="21:00">21h00</button>
+      <div class="chip-container" id="timeRow">
+        <button class="chip time-chip" data-time="12:00">12h00</button>
+        <button class="chip time-chip" data-time="12:30">12h30</button>
+        <button class="chip time-chip" data-time="13:00">13h00</button>
+        <button class="chip time-chip" data-time="13:30">13h30</button>
+        <button class="chip time-chip" data-time="18:30">18h30</button>
+        <button class="chip time-chip" data-time="19:00">19h00</button>
+        <button class="chip time-chip" data-time="19:30">19h30</button>
+        <button class="chip time-chip" data-time="20:00">20h00</button>
+        <button class="chip time-chip" data-time="20:30">20h30</button>
+        <button class="chip time-chip" data-time="21:00">21h00</button>
+        <button class="chip time-chip" data-time="21:30">21h30</button>
       </div>
 
-      <button class="confirm-btn" id="confirmBtn" disabled>Confirmer le rendez-vous</button>
+      <button class="confirm-btn" id="confirmBtn" disabled>Confirmer ça !</button>
       <div class="status-msg" id="statusMsg">&nbsp;</div>
     </div>
 
-    <!-- Panel 3 : succès -->
+    <!-- Panel 4 : succès -->
     <div id="panelSuccess" class="panel">
       <div class="success">
-        <span class="glass">🥂</span>
+        <span class="glass">🍽️</span>
         <h2>C'est noté !</h2>
-        <p>Rendez-vous <span class="recap" id="recap"></span>.<br>À très vite.</p>
+        <p>On se fait ça <span class="recap" id="recap"></span>.<br>À très vite !</p>
       </div>
     </div>
 
@@ -346,20 +399,40 @@
 
 <script>
   // ============================================================
-  // URL de ton Cloudflare Worker (relais sécurisé).
-  // L'URL du webhook Discord elle-même reste secrète côté serveur.
+  // URL de ton Cloudflare Worker
   // ============================================================
   const WORKER_URL = "https://invitation-webhook.nohan-brochard0-629.workers.dev/";
+
+  // ---------- Génération des émojis de fond ----------
+  function createFloatingEmojis() {
+    const container = document.getElementById('floating-emojis');
+    const emojis = ['🍹', '🍕', '🍣', '🍔', '🍷', '🙈'];
+    const emojiCount = 25; 
+
+    for (let i = 0; i < emojiCount; i++) {
+      const emojiSpan = document.createElement('span');
+      emojiSpan.className = 'floating-emoji';
+      emojiSpan.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      
+      emojiSpan.style.left = Math.random() * 100 + 'vw';
+      emojiSpan.style.fontSize = (Math.random() * 20 + 20) + 'px'; 
+      emojiSpan.style.animationDuration = (Math.random() * 15 + 10) + 's'; 
+      emojiSpan.style.animationDelay = (Math.random() * -25) + 's'; 
+      
+      container.appendChild(emojiSpan);
+    }
+  }
+  createFloatingEmojis(); 
 
   // ---------- Bouton "Non" fuyant ----------
   const zone = document.getElementById('choiceZone');
   const btnNon = document.getElementById('btnNon');
   const btnOui = document.getElementById('btnOui');
   
-  let compteurNon = 0; // Ajout du compteur
+  let compteurNon = 0;
 
   function fleeButton(){
-    compteurNon++; // On incrémente à chaque tentative
+    compteurNon++; 
 
     const zoneRect = zone.getBoundingClientRect();
     const btnRect = btnNon.getBoundingClientRect();
@@ -368,8 +441,7 @@
     const maxLeft = zoneRect.width - btnRect.width;
     const maxTop = zoneRect.height - btnRect.height;
 
-    // Calcul de la zone interdite (bouton Oui + petite marge de sécurité de 15px)
-    const padding = 15;
+    const padding = 12;
     const ouiLeft = (ouiRect.left - zoneRect.left) - padding;
     const ouiTop = (ouiRect.top - zoneRect.top) - padding;
     const ouiRight = (ouiRect.right - zoneRect.left) + padding;
@@ -379,20 +451,17 @@
     let overlap = true;
     let attempts = 0;
 
-    // On boucle tant que la nouvelle position chevauche le bouton Oui 
-    // (avec une limite de 100 tentatives pour éviter un plantage)
     while (overlap && attempts < 100) {
-      newLeft = Math.max(8, Math.min(maxLeft - 8, Math.random() * maxLeft));
+      newLeft = Math.max(6, Math.min(maxLeft - 6, Math.random() * maxLeft));
       newTop = Math.max(0, Math.min(maxTop, Math.random() * maxTop));
 
       const nonRight = newLeft + btnRect.width;
       const nonBottom = newTop + btnRect.height;
 
-      // Détection de collision (est-ce que le bouton Non est au-dessus du bouton Oui ?)
       if (newLeft < ouiRight && nonRight > ouiLeft && newTop < ouiBottom && nonBottom > ouiTop) {
-        overlap = true; // Ça se chevauche, on recommence
+        overlap = true; 
       } else {
-        overlap = false; // La place est libre !
+        overlap = false; 
       }
       attempts++;
     }
@@ -402,34 +471,53 @@
     btnNon.style.transform = 'none';
   }
 
-  // Desktop : le bouton fuit quand la souris s'approche
   zone.addEventListener('mousemove', (e) => {
     const btnRect = btnNon.getBoundingClientRect();
     const cx = btnRect.left + btnRect.width / 2;
     const cy = btnRect.top + btnRect.height / 2;
     const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
-    if (dist < 90) fleeButton();
+    if (dist < 80) fleeButton();
   });
 
-  // Mobile : le bouton fuit dès le premier contact, avant que le tap ne s'enregistre
   btnNon.addEventListener('touchstart', (e) => {
     e.preventDefault();
     fleeButton();
   }, { passive: false });
 
-  // Sécurité : même en cas de clic improbable, on ne fait rien
   btnNon.addEventListener('click', (e) => {
     e.preventDefault();
     fleeButton();
   });
 
-  // ---------- Passage au calendrier ----------
+  // ---------- Navigation entre les panels ----------
   const panelQuestion = document.getElementById('panelQuestion');
+  const panelFood = document.getElementById('panelFood');
   const panelCalendar = document.getElementById('panelCalendar');
   const panelSuccess = document.getElementById('panelSuccess');
 
   btnOui.addEventListener('click', () => {
     panelQuestion.classList.remove('active');
+    panelFood.classList.add('active');
+    
+    // Fait disparaître doucement les émojis flottants
+    document.getElementById('floating-emojis').style.opacity = '0';
+  });
+
+  // ---------- Choix de la nourriture ----------
+  let selectedFood = null;
+  const nextToCalBtn = document.getElementById('nextToCalBtn');
+
+  document.querySelectorAll('.food-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.food-chip.selected').forEach(el => el.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedFood = chip.dataset.food;
+      nextToCalBtn.disabled = false;
+    });
+  });
+
+  nextToCalBtn.addEventListener('click', () => {
+    panelFood.classList.remove('active');
     panelCalendar.classList.add('active');
     renderCalendar();
   });
@@ -463,7 +551,6 @@
     calGrid.innerHTML = '';
 
     const firstDay = new Date(viewYear, viewMonth, 1);
-    // Lundi = 0
     let startOffset = (firstDay.getDay() + 6) % 7;
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
@@ -526,6 +613,67 @@
     return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 
+  // ---------- Animation Confettis ----------
+  function startConfetti() {
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '9999';
+    document.body.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const colors = ['#ff4d6d', '#ffb3c1', '#a2d2ff', '#ffc8dd', '#ffd166'];
+    
+    for(let i=0; i<120; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            w: Math.random() * 8 + 4,
+            h: Math.random() * 4 + 4,
+            c: colors[Math.floor(Math.random() * colors.length)],
+            vy: Math.random() * 3 + 2,
+            vx: Math.random() * 2 - 1,
+            rot: Math.random() * 360,
+            rs: Math.random() * 4 - 2
+        });
+    }
+
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        
+        particles.forEach(p => {
+            p.y += p.vy;
+            p.x += p.vx;
+            p.rot += p.rs;
+            if (p.y < canvas.height) active = true;
+            
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot * Math.PI / 180);
+            ctx.fillStyle = p.c;
+            ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+            ctx.restore();
+        });
+        
+        if(active) {
+          requestAnimationFrame(update);
+        } else {
+          canvas.remove();
+        }
+    }
+    update();
+  }
+
+  // ---------- Envoi du Webhook ----------
   confirmBtn.addEventListener('click', async () => {
     if (!selectedDate || !selectedTime) return;
 
@@ -534,15 +682,14 @@
 
     const dateLabel = formatDateFr(selectedDate);
     
-    // Modification du message avec le compteur de clics "Non"
-    let message = `🥂 Elle a dit **oui** ! Rendez-vous le **${dateLabel}** à **${selectedTime}**.`;
+    let message = `🍽️ Elle a dit **oui** pour un resto **${selectedFood}** ! Vous y allez le **${dateLabel}** à **${selectedTime}**.`;
     
     if (compteurNon > 0) {
       message += `\n\n*(PS : Elle a quand même essayé de cliquer sur "Non" **${compteurNon}** fois avant d'accepter... 🤭)*`;
     }
 
     if (!WORKER_URL || WORKER_URL.includes('COLLE_ICI')) {
-      statusMsg.textContent = "Worker non configuré — le rendez-vous n'a pas été envoyé.";
+      statusMsg.textContent = "Worker non configuré.";
       confirmBtn.disabled = false;
       return;
     }
@@ -559,8 +706,11 @@
       panelCalendar.classList.remove('active');
       panelSuccess.classList.add('active');
       document.getElementById('recap').textContent = `le ${dateLabel} à ${selectedTime}`;
+      
+      startConfetti();
+      
     } catch (err) {
-      statusMsg.textContent = "Erreur : " + err.message + " | URL appelée : " + WORKER_URL;
+      statusMsg.textContent = "Erreur : " + err.message;
       confirmBtn.disabled = false;
     }
   });
