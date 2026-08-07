@@ -486,11 +486,11 @@
       const originalText = btnOui.textContent;
       btnOui.textContent = "Un instant...";
 
-      // Construction de l'Embed Discord
+      // 1. Construction de l'Embed Discord
       let embedData = {
         title: "🍽️ Elle a dit OUI pour le resto !",
         description: "Prépare-toi à en discuter avec elle en privé pour fixer la date et le lieu.",
-        color: 16731501 // Code couleur décimal qui correspond au rose corail du site (#ff4d6d)
+        color: 16731501 // Rose corail
       };
 
       // Ajout du footer si elle a essayé de cliquer sur "Non"
@@ -500,13 +500,14 @@
         };
       }
 
-      // Le payload final attendu par Discord
+      // 2. Le payload final attendu par Discord (on ajoute 'content' par sécurité)
       const payload = {
+        content: "✨ Nouvelle réponse pour le resto !",
         embeds: [embedData]
       };
 
       if (!WORKER_URL || WORKER_URL.includes('COLLE_ICI')) {
-        alert("Erreur de configuration du Worker.");
+        alert("Erreur : Le lien du Worker Cloudflare n'est pas configuré.");
         btnOui.disabled = false;
         btnOui.textContent = originalText;
         return;
@@ -516,18 +517,24 @@
         const res = await fetch(WORKER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload) // On envoie l'objet avec l'Embed
+          body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error('Erreur de serveur');
+        // 3. Meilleure gestion des erreurs pour savoir ce qui coince
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Code ${res.status} : ${errorText}`);
+        }
 
+        // Si tout est OK, on lance la victoire !
         document.getElementById('floating-emojis').style.opacity = '0';
         panelQuestion.classList.remove('active');
         panelSuccess.classList.add('active');
         startConfetti();
 
       } catch (err) {
-        alert("Oups, l'envoi a échoué. Réessaie !");
+        // 4. L'alerte affichera le vrai message d'erreur technique
+        alert("Oups, l'envoi a échoué.\n\nDétail de l'erreur : " + err.message + "\n\n(N'hésite pas à m'envoyer ce message si tu es bloqué !)");
         btnOui.disabled = false;
         btnOui.textContent = originalText;
       }
