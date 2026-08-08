@@ -9,6 +9,9 @@
   <title>J'ai une question pour toi...</title>
   <meta property="og:title" content="J'ai une petite question...">
   <meta property="og:description" content="Ouvre le lien pour voir de quoi il s'agit 👀">
+  <!-- 🖼️ J'ai mis un cœur mystérieux par défaut ici pour Instagram, tu peux remplacer le lien si tu préfères autre chose -->
+  <meta property="og:image"
+    content="https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=1080&auto=format&fit=crop">
   <meta name="theme-color" content="#fff5f6">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -336,6 +339,30 @@
     // ============================================================
     const WORKER_URL = "https://invitation-webhook.nohan-brochard0-629.workers.dev/";
 
+    // --- NOUVEAU : NOTIFICATION D'OUVERTURE DE PAGE ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      // On vérifie si on n'a pas déjà envoyé la notification pour cette session
+      if (!sessionStorage.getItem('vu')) {
+        sessionStorage.setItem('vu', 'true');
+
+        const payload = {
+          content: "👀 **Alerte radar :** L'invitation vient d'être ouverte ! (Elle est en train de regarder la page... 🤫)"
+        };
+
+        try {
+          // Envoi furtif au Worker
+          await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } catch (e) {
+          // Si ça échoue, on ne fait rien pour ne pas la déranger
+        }
+      }
+    });
+    // --------------------------------------------------
+
     // ---------- Génération des émojis de fond ----------
     function createFloatingEmojis() {
       const container = document.getElementById('floating-emojis');
@@ -362,30 +389,32 @@
     const btnOui = document.getElementById('btnOui');
 
     let compteurNon = 0;
-    let lastFleeTime = 0;
+    let lastFleeTime = 0; // Cooldown de sensibilité
 
     function fleeButton() {
       const now = Date.now();
+      // Le bouton ne peut fuir qu'une fois toutes les 350 millisecondes max
       if (now - lastFleeTime < 350) return;
       lastFleeTime = now;
 
       compteurNon++;
 
-      // On sort le bouton de la carte
+      // ASTUCE : On sort le bouton de la carte pour le rattacher au body (tout l'écran)
       if (btnNon.parentNode !== document.body) {
         document.body.appendChild(btnNon);
         btnNon.style.position = 'fixed';
-        btnNon.style.zIndex = '9999';
+        btnNon.style.zIndex = '9999'; // Toujours par-dessus le reste
         btnNon.style.margin = '0';
       }
 
       const btnRect = btnNon.getBoundingClientRect();
       const ouiRect = btnOui.getBoundingClientRect();
 
+      // Limites de l'écran
       const maxLeft = window.innerWidth - btnRect.width;
       const maxTop = window.innerHeight - btnRect.height;
 
-      // ZONE INTERDITE AGRANDIE : Le bouton "Non" ne s'approchera plus du "Grave !"
+      // ZONE INTERDITE : Le bouton "Non" ne s'approchera plus du "Grave !"
       const padding = 70;
       const ouiLeft = ouiRect.left - padding;
       const ouiTop = ouiRect.top - padding;
@@ -396,7 +425,9 @@
       let overlap = true;
       let attempts = 0;
 
+      // On cherche une place sur l'écran qui ne chevauche pas le bouton "Oui"
       while (overlap && attempts < 100) {
+        // Math.max/min empêche le bouton de sortir complètement de l'écran
         newLeft = Math.max(15, Math.min(maxLeft - 15, Math.random() * maxLeft));
         newTop = Math.max(15, Math.min(maxTop - 15, Math.random() * maxTop));
 
@@ -404,9 +435,9 @@
         const nonBottom = newTop + btnRect.height;
 
         if (newLeft < ouiRight && nonRight > ouiLeft && newTop < ouiBottom && nonBottom > ouiTop) {
-          overlap = true;
+          overlap = true; // On a touché la zone "Oui", on recalcule
         } else {
-          overlap = false;
+          overlap = false; // La place est bonne !
         }
         attempts++;
       }
@@ -416,7 +447,7 @@
       btnNon.style.transform = 'none';
     }
 
-    // Écoute de la souris
+    // On écoute la souris sur l'intégralité de la page
     document.addEventListener('mousemove', (e) => {
       if (document.getElementById('panelQuestion').classList.contains('active')) {
         const btnRect = btnNon.getBoundingClientRect();
@@ -424,7 +455,7 @@
         const cy = btnRect.top + btnRect.height / 2;
         const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
 
-        // HITBOX RÉDUITE : Il faut vraiment approcher le bouton "Non" (55 au lieu de 80)
+        // HITBOX RÉDUITE : Il faut vraiment approcher le bouton "Non"
         if (dist < 55) fleeButton();
       }
     });
@@ -557,6 +588,8 @@
         alert("Oups, l'envoi a échoué.\n\nDétail de l'erreur : " + err.message + "\n\n(N'hésite pas à m'envoyer ce message si tu es bloqué !)");
         btnOui.disabled = false;
         btnOui.textContent = originalText;
+
+        // On réaffiche le bouton Non en cas d'erreur
         btnNon.style.display = 'block';
       }
     });
