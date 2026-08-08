@@ -400,16 +400,30 @@
 
       compteurNon++;
 
+      // On récupère sa position AVANT de changer son conteneur
+      const btnRect = btnNon.getBoundingClientRect();
+      const ouiRect = btnOui.getBoundingClientRect();
+
       // ASTUCE : On sort le bouton de la carte pour le rattacher au body (tout l'écran)
       if (btnNon.parentNode !== document.body) {
+        btnNon.style.transition = 'none'; // Coupe l'animation pour l'ajustement initial
+        
         document.body.appendChild(btnNon);
         btnNon.style.position = 'fixed';
         btnNon.style.zIndex = '9999'; // Toujours par-dessus le reste
         btnNon.style.margin = '0';
+        
+        // On le positionne exactement là où il était visuellement
+        btnNon.style.left = btnRect.left + 'px';
+        btnNon.style.top = btnRect.top + 'px';
+        btnNon.style.transform = 'none';
+        
+        // Force le reflow pour appliquer cette position sans animation
+        btnNon.getBoundingClientRect();
+        
+        // Rétablit l'animation CSS
+        btnNon.style.transition = '';
       }
-
-      const btnRect = btnNon.getBoundingClientRect();
-      const ouiRect = btnOui.getBoundingClientRect();
 
       // Limites de l'écran
       const maxLeft = window.innerWidth - btnRect.width;
