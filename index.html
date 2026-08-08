@@ -428,9 +428,19 @@
 
       // On cherche une place sur l'écran qui ne chevauche pas le bouton "Oui"
       while (overlap && attempts < 100) {
+        // On calcule une nouvelle position proche de l'actuelle (entre 100 et 300 pixels)
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 100 + Math.random() * 200;
+        
+        // Si attempts est grand, on s'autorise à aller plus loin pour se débloquer
+        const actualDist = attempts > 20 ? distance * 2 : distance;
+
+        const proposedLeft = btnRect.left + Math.cos(angle) * actualDist;
+        const proposedTop = btnRect.top + Math.sin(angle) * actualDist;
+
         // Math.max/min empêche le bouton de sortir complètement de l'écran
-        newLeft = Math.max(15, Math.min(maxLeft - 15, Math.random() * maxLeft));
-        newTop = Math.max(15, Math.min(maxTop - 15, Math.random() * maxTop));
+        newLeft = Math.max(15, Math.min(maxLeft - 15, proposedLeft));
+        newTop = Math.max(15, Math.min(maxTop - 15, proposedTop));
 
         const nonRight = newLeft + btnRect.width;
         const nonBottom = newTop + btnRect.height;
